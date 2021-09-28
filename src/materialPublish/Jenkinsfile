@@ -7,19 +7,24 @@ pipeline {
     stages {
         stage('Pre Git') {
             steps {
-                echo "${params.PROJECT_NAME},${params.PUBLISH_PREID},${params.PUBLISH_BUMP},${params.PROJECT_VERSION},${params.PROJECT_GIT_PATH}"
+                echo "物料仓库信息：${params.MATERIAL_REPOSITORY_NAME},${params.MATERIAL_REPOSITORY_GIT_PATH}"
+                echo "物料信息：${params.MATERIAL_NAME},${params.MATERIAL_PATH},${params.MATERIAL_CATEGORY}"
+                echo "发布信息：${params.PUBLISH_PREID},${params.PUBLISH_BUMP},${params.MATERIAL_VERSION},${params.PUBLISH_BRANCH_NAME},${params.BUILD_PATH}"
+                echo "其他信息：${params.PUBLISH_PARAMS},${params.CACHE}"
                 sh 'git config --global user.email "1857048691@163.com"'
                 sh 'git config --global user.name "gwj"'
-                dir("${MATERIAL_BUILD_DIR}") {
-                    if (fileExists("${params.PROJECT_NAME}")) {
-                        echo ' git exit'
-                        dir("${MATERIAL_BUILD_DIR}/${params.PROJECT_NAME}") {
-                            sh "git pull origin ${params.BRANCH_NAME}"
-                            sh "git checkout ${params.BRANCH_NAME}"
+                script {
+                    dir("${MATERIAL_BUILD_DIR}") {
+                        if (fileExists("${params.MATERIAL_REPOSITORY_NAME}")) {
+                            echo ' git exit'
+                            dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
+                                sh "git pull origin ${params.BRANCH_NAME}"
+                                sh "git checkout ${params.BRANCH_NAME}"
+                            }
+                        } else {
+                            echo 'git is not exit'
+                            sh "git clone  ${params.MATERIAL_REPOSITORY_GIT_PATH} ${params.MATERIAL_REPOSITORY_NAME}"
                         }
-                    } else {
-                        echo 'git is not exit'
-                        sh "git clone ${params.PROJECT_GIT_PATH} ${params.PROJECT_NAME}"
                     }
                 }
             }
@@ -27,47 +32,55 @@ pipeline {
         stage('Pre Env') {
             steps {
                 echo "check node_modules,${params.CACHE}"
-                sh 'npm config set registry https://registry.npmjs.org/'
                 sh 'yarn config set registry https://registry.npmjs.org/'
-                dir("${MATERIAL_BUILD_DIR}/${params.PROJECT_NAME}") {
-                    if (!fileExists('node_modules')) {
-                        sh 'yarn --force --production --pure-lockfile'
-                    } else {
-                        if (!params.CACHE) {
-                            echo "CACHE --- ${params.CACHE}"
-                            sh 'rm -r node_modules'
+                script {
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
+                        if (!fileExists('node_modules')) {
                             sh 'yarn --force --production --pure-lockfile'
+                        } else {
+                            if (!params.CACHE) {
+                                echo "CACHE --- ${params.CACHE}"
+                                sh 'rm -r node_modules'
+                                sh 'yarn --force --production --pure-lockfile'
+                            }
+                        }
+                    }
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}/${params.MATERIAL_PATH}") {
+                        if (!fileExists('node_modules')) {
+                            sh 'yarn --force --production --pure-lockfile'
+                        } else {
+                            if (!params.CACHE) {
+                                echo "CACHE --- ${params.CACHE}"
+                                sh(script: 'rm -rf node_modules')
+                                sh 'yarn --force --production --pure-lockfile'
+                            }
                         }
                     }
                 }
-                dir("${MATERIAL_BUILD_DIR}/${params.PROJECT_NAME}/${params.MATERIAL_CATEGORY}/${params.MATERIAL_NAME}") {
-                    if (!fileExists('node_modules')) {
-                        sh 'yarn --force --production --pure-lockfile'
-                    } else {
-                        if (!params.CACHE) {
-                            echo "CACHE --- ${params.CACHE}"
-                            sh(script: 'rm -rf node_modules')
-                            sh 'yarn --force --production --pure-lockfile'
+            }
+        }
+        stage('publish') {
+            steps {
+                echo "check node_modules"
+                script {
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}/${params.MATERIAL_PATH}") {
+                        if(params.PUBLISH_PREID == 'beta'){
+                            echo "winex publish --beta  ${params.PUBLISH_BUMP} --skipGitStatusCheck ${params.PUBLISH_PARAMS}"
+                            sh "winex publish --beta  ${params.PUBLISH_BUMP} --skipGitStatusCheck ${params.PUBLISH_PARAMS}"
                         }
+                        if(params.PUBLISH_ISRELEASE == 'release'){
+                            echo 'winex publish --release ${params.PUBLISH_BUMP} --skipGitStatusCheck'
+                            sh 'winex publish --release ${params.PUBLISH_BUMP} --skipGitStatusCheck'
+                        }
+                        sh 'winex doc build'
+                        sh 'winex build --app-type materialDemo'
                     }
                 }
             }
         }
-        stage('Build') {
+        stage('deploy') {
             steps {
-                sh 'npm -v'
-            }
-        }
-        stage('Test') {
-            steps {
-                sh './jenkins/scripts/test.sh'
-            }
-        }
-        stage('Deliver') {
-            steps {
-                sh './jenkins/scripts/deliver.sh'
-                input message: 'Finished using the web site? (Click "Proceed" to continue)'
-                sh './jenkins/scripts/kill.sh'
+                sh './jenkins/scripts/test.sh ${MATERIAL_BUILD_DIR}'
             }
         }
     }
