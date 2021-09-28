@@ -1,0 +1,74 @@
+pipeline {
+    agent any
+    environment {
+        CI = 'true'
+        MATERIAL_BUILD_DIR = '/var/lib/jenkins/material-build'
+    }
+    stages {
+        stage('Pre Git') {
+            steps {
+                echo "${params.PROJECT_NAME},${params.PUBLISH_PREID},${params.PUBLISH_BUMP},${params.PROJECT_VERSION},${params.PROJECT_GIT_PATH}"
+                sh 'git config --global user.email "1857048691@163.com"'
+                sh 'git config --global user.name "gwj"'
+                dir("${MATERIAL_BUILD_DIR}") {
+                    if (fileExists("${params.PROJECT_NAME}")) {
+                        echo ' git exit'
+                        dir("${MATERIAL_BUILD_DIR}/${params.PROJECT_NAME}") {
+                            sh "git pull origin ${params.BRANCH_NAME}"
+                            sh "git checkout ${params.BRANCH_NAME}"
+                        }
+                    } else {
+                        echo 'git is not exit'
+                        sh "git clone ${params.PROJECT_GIT_PATH} ${params.PROJECT_NAME}"
+                    }
+                }
+            }
+        }
+        stage('Pre Env') {
+            stages {
+                echo "check node_modules,${params.CACHE}"
+                sh 'npm config set registry https://registry.npmjs.org/'
+                sh 'yarn config set registry https://registry.npmjs.org/'
+                dir("${MATERIAL_BUILD_DIR}/${params.PROJECT_NAME}") {
+                    if (!fileExists('node_modules')) {
+                        sh 'yarn --force --production --pure-lockfile'
+                    } else {
+                        if (!params.CACHE) {
+                            echo "CACHE --- ${params.CACHE}"
+                            sh 'rm -r node_modules'
+                            sh 'yarn --force --production --pure-lockfile'
+                        }
+                    }
+                }
+                dir("${MATERIAL_BUILD_DIR}/${params.PROJECT_NAME}/${params.MATERIAL_CATEGORY}/${params.MATERIAL_NAME}") {
+                    if (!fileExists('node_modules')) {
+                        sh 'yarn --force --production --pure-lockfile'
+                    } else {
+                        if (!params.CACHE) {
+                            echo "CACHE --- ${params.CACHE}"
+                            sh(script: 'rm -rf node_modules')
+                            sh 'yarn --force --production --pure-lockfile'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'npm -v'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh './jenkins/scripts/test.sh'
+            }
+        }
+        stage('Deliver') {
+            steps {
+                sh './jenkins/scripts/deliver.sh'
+                input message: 'Finished using the web site? (Click "Proceed" to continue)'
+                sh './jenkins/scripts/kill.sh'
+            }
+        }
+    }
+}
