@@ -25,7 +25,7 @@ pipeline {
             }
         }
         stage('Pre Env') {
-            stages {
+            steps {
                 echo "check node_modules,${params.CACHE}"
                 sh 'npm config set registry https://registry.npmjs.org/'
                 sh 'yarn config set registry https://registry.npmjs.org/'
@@ -72,3 +72,5 @@ pipeline {
         }
     }
 }
+
+
