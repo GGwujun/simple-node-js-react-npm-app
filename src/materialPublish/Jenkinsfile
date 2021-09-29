@@ -3,36 +3,29 @@ pipeline {
     environment {
         CI = 'true'
         MATERIAL_BUILD_DIR = '/var/lib/jenkins/material-build'
+        MATERIAL_REPO_CREDENTIALS = credentials('winning-tfs-gwj')
     }
     stages {
         stage('Pre Git') {
-            steps {
+            steps{
+                sh "./src/materialPublish/scripts/test.sh"
                 echo "物料仓库信息：${params.MATERIAL_REPOSITORY_NAME},${params.MATERIAL_REPOSITORY_GIT_PATH}"
                 echo "物料信息：${params.MATERIAL_NAME},${params.MATERIAL_PATH},${params.MATERIAL_CATEGORY}"
                 echo "发布信息：${params.PUBLISH_PREID},${params.PUBLISH_BUMP},${params.MATERIAL_VERSION},${params.PUBLISH_BRANCH_NAME},${params.BUILD_PATH}"
                 echo "其他信息：${params.PUBLISH_PARAMS},${params.CACHE}"
                 sh 'git config --global user.email "1857048691@163.com"'
-                sh 'git config --global user.name "gwj"'
+                sh 'git config --global user.name "g_wj"'
                 script {
-                    dir("${MATERIAL_BUILD_DIR}") {
-                        if (fileExists("${params.MATERIAL_REPOSITORY_NAME}")) {
-                            echo ' git exit'
-                            dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
-                                sh "git pull origin ${params.BRANCH_NAME}"
-                                sh "git checkout ${params.BRANCH_NAME}"
-                            }
-                        } else {
-                            echo 'git is not exit'
-                            sh "git clone  ${params.MATERIAL_REPOSITORY_GIT_PATH} ${params.MATERIAL_REPOSITORY_NAME}"
-                        }
+                    echo 'create material dir'
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
+                        checkout([$class: 'GitSCM', branches: [[name: "*/${params.PUBLISH_BRANCH_NAME}"]], extensions: [[$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true]], userRemoteConfigs: [[credentialsId: '6057d8bb-cfde-4e06-8d62-df86b2dae3a8', url: params.MATERIAL_REPOSITORY_GIT_PATH]]])
                     }
                 }
             }
         }
         stage('Pre Env') {
             steps {
-                echo "check node_modules,${params.CACHE}"
-                sh 'yarn config set registry https://registry.npmjs.org/'
+                sh 'yarn config set registry http://172.16.9.242:8081/repository/npm-group/'
                 script {
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
                         if (!fileExists('node_modules')) {
@@ -40,13 +33,15 @@ pipeline {
                         } else {
                             if (!params.CACHE) {
                                 echo "CACHE --- ${params.CACHE}"
-                                sh 'rm -r node_modules'
+                                deleteDir('node_modules')
                                 sh 'yarn --force --production --pure-lockfile'
                             }
                         }
                     }
+                    echo '检查物料目录node_modules'
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}/${params.MATERIAL_PATH}") {
                         if (!fileExists('node_modules')) {
+                            echo '没有node_modules'
                             sh 'yarn --force --production --pure-lockfile'
                         } else {
                             if (!params.CACHE) {
@@ -61,7 +56,6 @@ pipeline {
         }
         stage('publish') {
             steps {
-                echo "check node_modules"
                 script {
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}/${params.MATERIAL_PATH}") {
                         if(params.PUBLISH_PREID == 'beta'){
@@ -80,7 +74,7 @@ pipeline {
         }
         stage('deploy') {
             steps {
-                sh './jenkins/scripts/test.sh ${MATERIAL_BUILD_DIR}'
+                scho 'deploy'
             }
         }
     }
