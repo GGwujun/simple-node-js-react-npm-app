@@ -1,3 +1,7 @@
+/*Jenkinsfile (Declarative Pipeline)
+jar_CICD_pipeline 版本一
+*/
+
 pipeline {
     agent any
     environment {
@@ -5,7 +9,32 @@ pipeline {
         MATERIAL_BUILD_DIR = '/var/lib/jenkins/material-build'
         MATERIAL_REPO_CREDENTIALS = credentials('winning-tfs-gwj')
     }
+     parameters {
+        string(name:'CREDENTIALS_ID', description: 'GIT凭证ID')
+        string(name:'MATERIAL_REPOSITORY_NAME', defaultValue: '', description: '物料仓库名称')
+        string(name:'MATERIAL_REPOSITORY_GIT_PATH', description: '物料仓库地址')
+        string(name:'MATERIAL_NAME', description: '物料名称')
+        string(name:'MATERIAL_PATH', description: '物料目录相对于物料仓库的路径，比如component/winning-materials-test')
+        string(name:'MATERIAL_CATEGORY', description: '物料分类：component、block、plugin、scaffold')
+        string(name:'PUBLISH_PREID', description: '发布的版本标记：beta、release')
+        string(name:'PUBLISH_BUMP', description: '发布版本标识：patch、minor、major')
+        string(name:'MATERIAL_VERSION',  description: '自定义发布版本，如果传了此参数将会直接用这个版本发布，不再根据版本标记和版本标识计算版本号')
+        string(name:'PUBLISH_BRANCH_NAME',  description: 'commitd')
+        string(name:'BUILD_PATH', defaultValue:"lib", description: '物料构建产物输出目录')
+        string(name:'MATERIAL_DOC_DIR', defaultValue:"doc-dist", description: '物料文档构建产物输出目录')
+        string(name:'MATERIAL_DEMO_DIR', defaultValue:"dist", description: '物料demo构建产物输出目录')
+        string(name:'PUBLISH_PARAMS',  description: '自定义传给winex publish的参数')
+        string(name:'CACHE', defaultValue:true, description: '是否缓存node_modules')
+        string(name:'FEEDBACK_URL', description: 'JOB反馈地址，一般为pre_post和post时触发')
+    }
     stages {
+        stage("report") {
+            steps {
+                sh '''
+                    curl -X POST "${FEEDBACK_URL}?build_id=${J_BUILD_ID}&build_number=${BUILD_NUMBER}&build_status=PROCESS"
+                '''
+            }
+        }
         stage('Pre Git') {
             steps{
                 sh "./src/materialPublish/scripts/test.sh"
@@ -17,8 +46,20 @@ pipeline {
                 sh 'git config --global user.name "g_wj"'
                 script {
                     echo 'create material dir'
+                    if(fileExists("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}")){
+                        deleteDir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}")
+                    }
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
-                        checkout([$class: 'GitSCM', branches: [[name: "*/${params.PUBLISH_BRANCH_NAME}"]], extensions: [[$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true]], userRemoteConfigs: [[credentialsId: '6057d8bb-cfde-4e06-8d62-df86b2dae3a8', url: params.MATERIAL_REPOSITORY_GIT_PATH]]])
+                        checkout(
+                            [
+                                $class: 'GitSCM', 
+                                branches: [
+                                    [name: params.PUBLISH_BRANCH_NAME]], 
+                                    extensions: [[$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true]], 
+                                    userRemoteConfigs: [[credentialsId: MATERIAL_REPO_CREDENTIALS, url: params.MATERIAL_REPOSITORY_GIT_PATH]
+                                ]
+                            ]
+                        )
                     }
                 }
             }
@@ -78,6 +119,68 @@ pipeline {
             }
         }
     }
+    post {
+        cleanup {
+            // 无论构建状态如何，始终在所有其他条件之后运行
+        }
+        aborted {
+            // 在构建状态为“中止”时运行
+        }
+        success {
+            // 如果构建状态为“成功”或尚未设置，则运行
+            // sh '''
+            //     ARTIFACT_ABS_PATH=${WORKSPACE}/${ARTIFACTS_PATH}
+            //     PARENT_PATH=${ARTIFACT_ABS_PATH%/*}
+            //     ARTIFACT_FILE_NAME=${APP_NAME}.zip
+            //     if [ -d $ARTIFACT_ABS_PATH ]; then
+            //         cd $ARTIFACT_ABS_PATH
+            //         zip -r ${ARTIFACT_FILE_NAME} boot/*
+            //         mv ${ARTIFACT_FILE_NAME} ${WORKSPACE}/
+            //     fi
+            // '''
+
+            // nexusArtifactUploader 
+            //     artifacts: [[artifactId: '$BRANCH_NAME', classifier: '', file: '$APP_NAME.zip', type: 'zip']], 
+            //     credentialsId: 'nexus_admin', 
+            //     groupId: '$APP_NAME', 
+            //     nexusUrl: '172.16.7.48:8081', 
+            //     nexusVersion: 'nexus3', 
+            //     protocol: 'http', 
+            //     repository: 'winex-snapshot/', 
+            //     version: "$J_BUILD_ID.$COMMIT_ID"
+
+            sshPublisher 
+                failOnError: true, 
+                publishers: [
+                sshPublisherDesc(
+                    configName: 'demo-214', 
+                    transfers: [
+                        sshTransfer(
+                            cleanRemote: true, 
+                            excludes: '', 
+                            execCommand: '', 
+                            execTimeout: 120000, 
+                            flatten: false, 
+                            makeEmptyDirs: false, 
+                            noDefaultExcludes: false, 
+                            patternSeparator: '[, ]+', 
+                            remoteDirectory: '/winning/winmid/nginx/html/material-demos', 
+                            remoteDirectorySDF: false, 
+                            removePrefix: "${MATERIAL_BUILD_DIR}"), 
+                            sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/*")
+                    ], 
+                    usePromotionTimestamp: false, 
+                    useWorkspaceInPromotion: false, 
+                    verbose: false)
+            ]
+
+            cleanWs()
+        }
+        failure {
+            // 如果构建状态为“失败”，则运行
+        }
+        unsuccessful {
+            // 如果当前构建状态为“中止”、“失败”或“不稳定”，则运行
+        }
+    }
 }
-
-
