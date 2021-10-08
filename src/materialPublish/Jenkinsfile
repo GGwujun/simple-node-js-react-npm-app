@@ -119,7 +119,7 @@ pipeline {
                     echo 'push'
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
                         withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                            sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
+                            sh 'git config --local credential.helper "!p() { echo username=$GIT_USERNAME; echo password=$GIT_PASSWORD; }; p"'
                             sh "git config --global user.name $GIT_USERNAME"
                             sh 'git config --global user.email "mynamedlq@163.com"'
                             sh 'git status'
