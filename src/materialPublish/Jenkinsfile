@@ -48,7 +48,7 @@ pipeline {
                     if(fileExists("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}")){
                         deleteDir()
                     }
-                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
                         checkout(
                             [
                                 $class: 'GitSCM', 
@@ -70,12 +70,12 @@ pipeline {
                 script {
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
                         if (!fileExists('node_modules')) {
-                            sh 'yarn --force --production --pure-lockfile'
+                            sh 'yarn --force  --pure-lockfile'
                         } else {
                             if (!params.CACHE) {
                                 echo "CACHE --- ${params.CACHE}"
                                 deleteDir('node_modules')
-                                sh 'yarn --force --production --pure-lockfile'
+                                sh 'yarn --force  --pure-lockfile'
                             }
                         }
                     }
@@ -83,12 +83,12 @@ pipeline {
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}/${params.MATERIAL_PATH}") {
                         if (!fileExists('node_modules')) {
                             echo '没有node_modules'
-                            sh 'yarn --force --production --pure-lockfile'
+                            sh 'yarn --force  --pure-lockfile'
                         } else {
                             if (!params.CACHE) {
                                 echo "CACHE --- ${params.CACHE}"
                                 sh(script: 'rm -rf node_modules')
-                                sh 'yarn --force --production --pure-lockfile'
+                                sh 'yarn --force  --pure-lockfile'
                             }
                         }
                     }
