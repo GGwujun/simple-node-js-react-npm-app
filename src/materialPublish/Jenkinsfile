@@ -166,7 +166,7 @@ pipeline {
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '/winning/winmid/nginx/html/material-docs', 
+                                remoteDirectory: '/var/lib/jenkins/material-docs', 
                                 remoteDirectorySDF: false, 
                                 // removePrefix: "${MATERIAL_BUILD_DIR}", 
                                 sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/index.html"
@@ -205,9 +205,11 @@ pipeline {
             ]    
 
             withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
                 sh "git config --global user.name $GIT_USERNAME"
                 sh 'git config --global user.email "mynamedlq@163.com"'
-                sh("git push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
+                // sh("git push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
+                sh 'git push -u origin master'
             }
 
             // withCredentials([usernamePassword(credentialsId:"git-global-credentials",usernameVariable: "GIT_USERNAME",passwordVariable: "GIT_PASSWORD")]) {
