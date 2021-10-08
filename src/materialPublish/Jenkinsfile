@@ -47,9 +47,9 @@ pipeline {
                     echo 'create material dir'
                     if(fileExists("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}")){
                         echo "exist current material repository ${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}"
-                        deleteDir()
                     }
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
+                        deleteDir()
                         checkout(
                             [
                                 $class: 'GitSCM', 
