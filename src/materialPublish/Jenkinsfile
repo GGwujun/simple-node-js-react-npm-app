@@ -152,6 +152,7 @@ pipeline {
             //     version: "$J_BUILD_ID.$COMMIT_ID"
 
             // 上传doc产物
+            echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/**"
             sshPublisher failOnError: true,  publishers: [
                     sshPublisherDesc(
                         configName: 'demo-214', 
@@ -168,7 +169,7 @@ pipeline {
                                 remoteDirectory: '/winning/winmid/nginx/html/material-docs', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: "${MATERIAL_BUILD_DIR}", 
-                                sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/*"
+                                sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/**"
                             )
                         ], 
                         usePromotionTimestamp: false, 
@@ -194,7 +195,7 @@ pipeline {
                                 remoteDirectory: '/winning/winmid/nginx/html/material-demos', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: "${MATERIAL_BUILD_DIR}", 
-                                sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/*"
+                                sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/**"
                             )
                         ], 
                         usePromotionTimestamp: false, 
