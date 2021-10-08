@@ -168,7 +168,7 @@ pipeline {
                                 patternSeparator: '[, ]+', 
                                 remoteDirectory: '/winning/winmid/nginx/html/material-docs', 
                                 remoteDirectorySDF: false, 
-                                removePrefix: "${MATERIAL_BUILD_DIR}", 
+                                // removePrefix: "${MATERIAL_BUILD_DIR}", 
                                 sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/**"
                             )
                         ], 
@@ -194,7 +194,7 @@ pipeline {
                                 patternSeparator: '[, ]+', 
                                 remoteDirectory: '/winning/winmid/nginx/html/material-demos', 
                                 remoteDirectorySDF: false, 
-                                removePrefix: "${MATERIAL_BUILD_DIR}", 
+                                // removePrefix: "${MATERIAL_BUILD_DIR}", 
                                 sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/**"
                             )
                         ], 
