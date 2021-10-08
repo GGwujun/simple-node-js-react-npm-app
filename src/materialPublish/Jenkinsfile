@@ -113,9 +113,20 @@ pipeline {
                 }
             }
         }
-        stage('deploy') {
+        stage('push') {
             steps {
-                echo 'deploy'
+                script {
+                    echo 'push'
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
+                        withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                            sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
+                            sh "git config --global user.name $GIT_USERNAME"
+                            sh 'git config --global user.email "mynamedlq@163.com"'
+                            // sh("git push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
+                            sh 'git push -u origin master'
+                        }
+                    }
+                }
             }
         }
     }
@@ -161,10 +172,6 @@ pipeline {
                 cp  -a -f ${DOC_FILE}  ${MATERIAL_DOC}
             '''
 
-            // echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/"
-            // sh  "mkdir -p /winning/winmid/nginx/html/material-docs/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
-            // sh  "cp  -a -f ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/*  /winning/winmid/nginx/html/material-docs/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
-
             // sshPublisher failOnError: true,  publishers: [
             //         sshPublisherDesc(
             //             configName: 'demo-214', 
@@ -192,8 +199,14 @@ pipeline {
 
              // 上传demo产物
             // echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/"
-            // sh "mkdir -p /winning/winmid/nginx/html/material-demos/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
-            // sh "cp  -a -f ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/*  /winning/winmid/nginx/html/material-demos/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
+
+            sh '''
+                DEMO_DIR=${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}
+                MATERIAL_DEMO=/winning/winmid/nginx/html/material-demos/${MATERIAL_CATEGORY}/${MATERIAL_NAME}
+                DEMO_FILE=${DEMO_DIR}/*
+                mkdir -p ${MATERIAL_DEMO}
+                cp  -a -f ${DEMO_FILE}  ${MATERIAL_DEMO}
+            '''
 
             // sshPublisher failOnError: true,  publishers: [
             //         sshPublisherDesc(
@@ -218,15 +231,7 @@ pipeline {
             //             useWorkspaceInPromotion: false, 
             //             verbose: false
             //         )
-            // ]    
-
-            withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
-                sh "git config --global user.name $GIT_USERNAME"
-                sh 'git config --global user.email "mynamedlq@163.com"'
-                // sh("git push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
-                sh 'git push -u origin master'
-            }
+            // ]
 
             cleanWs()
         }
