@@ -24,7 +24,7 @@ pipeline {
         string(name:'MATERIAL_DOC_DIR', defaultValue:"doc-dist", description: '物料文档构建产物输出目录')
         string(name:'MATERIAL_DEMO_DIR', defaultValue:"dist", description: '物料demo构建产物输出目录')
         string(name:'PUBLISH_PARAMS',  description: '自定义传给winex publish的参数')
-        string(name:'CACHE', defaultValue:true, description: '是否缓存node_modules')
+        string(name:'CACHE', defaultValue:"true", description: '是否缓存node_modules')
         string(name:'FEEDBACK_URL', description: 'JOB反馈地址，一般为pre_post和post时触发')
     }
     stages {
