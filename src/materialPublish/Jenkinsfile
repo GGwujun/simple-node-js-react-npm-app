@@ -10,16 +10,16 @@ pipeline {
         MATERIAL_REPO_CREDENTIALS = credentials('winning-tfs-gwj')
     }
      parameters {
-        string(name:'CREDENTIALS_ID', description: 'GIT凭证ID')
-        string(name:'MATERIAL_REPOSITORY_NAME', defaultValue: '', description: '物料仓库名称')
-        string(name:'MATERIAL_REPOSITORY_GIT_PATH', description: '物料仓库地址')
-        string(name:'MATERIAL_NAME', description: '物料名称')
-        string(name:'MATERIAL_PATH', description: '物料目录相对于物料仓库的路径，比如component/winning-materials-test')
-        string(name:'MATERIAL_CATEGORY', description: '物料分类：component、block、plugin、scaffold')
-        string(name:'PUBLISH_PREID', description: '发布的版本标记：beta、release')
-        string(name:'PUBLISH_BUMP', description: '发布版本标识：patch、minor、major')
+        string(name:'CREDENTIALS_ID',defaultValue:'winning-tfs-gwj',description: 'GIT凭证ID')
+        string(name:'MATERIAL_REPOSITORY_NAME', defaultValue: 'winning-webmaterials-test', description: '物料仓库名称')
+        string(name:'MATERIAL_REPOSITORY_GIT_PATH',defaultValue:'http://tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test',description: '物料仓库地址')
+        string(name:'MATERIAL_NAME',defaultValue:'person-input',description: '物料名称')
+        string(name:'MATERIAL_PATH', defaultValue:'components/person-input',description: '物料目录相对于物料仓库的路径，比如component/winning-materials-test')
+        string(name:'MATERIAL_CATEGORY', defaultValue:'component',description: '物料分类：component、block、plugin、scaffold')
+        string(name:'PUBLISH_PREID', defaultValue:'beta', description: '发布的版本标记：beta、release')
+        string(name:'PUBLISH_BUMP', defaultValue:'patch', description: '发布版本标识：patch、minor、major')
         string(name:'MATERIAL_VERSION',  description: '自定义发布版本，如果传了此参数将会直接用这个版本发布，不再根据版本标记和版本标识计算版本号')
-        string(name:'PUBLISH_BRANCH_NAME',  description: 'commitd')
+        string(name:'PUBLISH_BRANCH_NAME',  defaultValue:'5510bd3480946738848590976073d1ee1ad5a5be', description: 'commitd')
         string(name:'BUILD_PATH', defaultValue:"lib", description: '物料构建产物输出目录')
         string(name:'MATERIAL_DOC_DIR', defaultValue:"doc-dist", description: '物料文档构建产物输出目录')
         string(name:'MATERIAL_DEMO_DIR', defaultValue:"dist", description: '物料demo构建产物输出目录')
@@ -150,9 +150,7 @@ pipeline {
             //     version: "$J_BUILD_ID.$COMMIT_ID"
 
             // 上传doc产物
-            sshPublisher 
-                failOnError: true, 
-                publishers: [
+            sshPublisher failOnError: true,  publishers: [
                     sshPublisherDesc(
                         configName: 'demo-214', 
                         transfers: [
