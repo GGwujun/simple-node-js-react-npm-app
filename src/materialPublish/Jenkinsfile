@@ -28,13 +28,13 @@ pipeline {
         string(name:'FEEDBACK_URL', description: 'JOB反馈地址，一般为pre_post和post时触发')
     }
     stages {
-        stage("report") {
-            steps {
-                sh '''
-                    curl -X POST "${FEEDBACK_URL}?build_id=${J_BUILD_ID}&build_number=${BUILD_NUMBER}&build_status=PROCESS"
-                '''
-            }
-        }
+        // stage("report") {
+        //     steps {
+        //         sh '''
+        //             curl -X POST "${FEEDBACK_URL}?build_id=${J_BUILD_ID}&build_number=${BUILD_NUMBER}&build_status=PROCESS"
+        //         '''
+        //     }
+        // }
         stage('Pre Git') {
             steps{
                 sh "./src/materialPublish/scripts/test.sh"
