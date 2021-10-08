@@ -122,8 +122,8 @@ pipeline {
                             sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
                             sh "git config --global user.name $GIT_USERNAME"
                             sh 'git config --global user.email "mynamedlq@163.com"'
-                            // sh("git push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
-                            sh 'git push -u origin master'
+                            sh 'git status'
+                            sh 'git push  origin master'
                         }
                     }
                 }
@@ -141,16 +141,6 @@ pipeline {
         }
         success {
             // 如果构建状态为“成功”或尚未设置，则运行
-            // sh '''
-            //     ARTIFACT_ABS_PATH=${WORKSPACE}/${ARTIFACTS_PATH}
-            //     PARENT_PATH=${ARTIFACT_ABS_PATH%/*}
-            //     ARTIFACT_FILE_NAME=${APP_NAME}.zip
-            //     if [ -d $ARTIFACT_ABS_PATH ]; then
-            //         cd $ARTIFACT_ABS_PATH
-            //         zip -r ${ARTIFACT_FILE_NAME} boot/*
-            //         mv ${ARTIFACT_FILE_NAME} ${WORKSPACE}/
-            //     fi
-            // '''
 
             // nexusArtifactUploader 
             //     artifacts: [[artifactId: '$BRANCH_NAME', classifier: '', file: '$APP_NAME.zip', type: 'zip']], 
@@ -198,8 +188,7 @@ pipeline {
             // ]
 
              // 上传demo产物
-            // echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/"
-
+            echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/"
             sh '''
                 DEMO_DIR=${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}
                 MATERIAL_DEMO=/winning/winmid/nginx/html/material-demos/${MATERIAL_CATEGORY}/${MATERIAL_NAME}
