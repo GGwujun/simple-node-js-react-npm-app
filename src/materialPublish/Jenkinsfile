@@ -204,7 +204,7 @@ pipeline {
             ]    
 
             withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                sh("git Push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
+                sh("git push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
             }
 
             // withCredentials([usernamePassword(credentialsId:"git-global-credentials",usernameVariable: "GIT_USERNAME",passwordVariable: "GIT_PASSWORD")]) {
