@@ -203,6 +203,19 @@ pipeline {
                     )
             ]    
 
+            withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                sh("git Push http://$GIT_USERNAME:$GIT_PASSWORD@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test")
+            }
+
+            // withCredentials([usernamePassword(credentialsId:"git-global-credentials",usernameVariable: "GIT_USERNAME",passwordVariable: "GIT_PASSWORD")]) {
+            //     // 配置 Git 工具中仓库认证的用户名、密码
+            //     sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
+            //     // 配置 git 变量 user.name 和 user.emai
+            //     sh "git config --global user.name $GIT_USERNAME"
+            //     sh 'git config --global user.email "mynamedlq@163.com"'
+            //     sh 'git push -u origin master'
+            // }
+
             cleanWs()
         }
         failure {
