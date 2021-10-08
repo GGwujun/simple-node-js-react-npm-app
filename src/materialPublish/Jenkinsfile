@@ -7,7 +7,6 @@ pipeline {
     environment {
         CI = 'true'
         MATERIAL_BUILD_DIR = '/var/lib/jenkins/material-build'
-        MATERIAL_REPO_CREDENTIALS = credentials('winning-tfs-gwj')
     }
      parameters {
         string(name:'CREDENTIALS_ID',defaultValue:'winning-tfs-gwj',description: 'GIT凭证ID')
@@ -47,7 +46,7 @@ pipeline {
                 script {
                     echo 'create material dir'
                     if(fileExists("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}")){
-                         deleteDir()
+                        deleteDir()
                     }
                      dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
                         checkout(
@@ -56,7 +55,7 @@ pipeline {
                                 branches: [
                                     [name: params.PUBLISH_BRANCH_NAME]], 
                                     extensions: [[$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true]], 
-                                    userRemoteConfigs: [[credentialsId: MATERIAL_REPO_CREDENTIALS, url: params.MATERIAL_REPOSITORY_GIT_PATH]
+                                    userRemoteConfigs: [[credentialsId: 'winning-tfs-gwj', url: params.MATERIAL_REPOSITORY_GIT_PATH]
                                 ]
                             ]
                         )
