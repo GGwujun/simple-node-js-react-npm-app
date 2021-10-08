@@ -153,56 +153,61 @@ pipeline {
 
             // 上传doc产物
             echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/"
-            sshPublisher failOnError: true,  publishers: [
-                    sshPublisherDesc(
-                        configName: 'demo-214', 
-                        transfers: [
-                            sshTransfer(
-                                cleanRemote: true, 
-                                excludes: '', 
-                                execCommand: '', 
-                                execTimeout: 120000, 
-                                flatten: false, 
-                                makeEmptyDirs: false, 
-                                noDefaultExcludes: false, 
-                                patternSeparator: '[, ]+', 
-                                remoteDirectory: '/var/lib/jenkins/material-docs', 
-                                remoteDirectorySDF: false, 
-                                // removePrefix: "${MATERIAL_BUILD_DIR}", 
-                                sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/index.html"
-                            )
-                        ], 
-                        usePromotionTimestamp: false, 
-                        useWorkspaceInPromotion: false, 
-                        verbose: false
-                    )
-            ]
+            mkdir -p "/winning/winmid/nginx/html/material-docs/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
+            cp  -a -f "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/*"  "/winning/winmid/nginx/html/material-docs/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
+            // sshPublisher failOnError: true,  publishers: [
+            //         sshPublisherDesc(
+            //             configName: 'demo-214', 
+            //             transfers: [
+            //                 sshTransfer(
+            //                     cleanRemote: true, 
+            //                     excludes: '', 
+            //                     execCommand: '', 
+            //                     execTimeout: 120000, 
+            //                     flatten: false, 
+            //                     makeEmptyDirs: false, 
+            //                     noDefaultExcludes: false, 
+            //                     patternSeparator: '[, ]+', 
+            //                     remoteDirectory: '/var/lib/jenkins/material-docs', 
+            //                     remoteDirectorySDF: false, 
+            //                     // removePrefix: "${MATERIAL_BUILD_DIR}", 
+            //                     sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/index.html"
+            //                 )
+            //             ], 
+            //             usePromotionTimestamp: false, 
+            //             useWorkspaceInPromotion: false, 
+            //             verbose: false
+            //         )
+            // ]
 
              // 上传demo产物
-            sshPublisher failOnError: true,  publishers: [
-                    sshPublisherDesc(
-                        configName: 'demo-214', 
-                        transfers: [
-                            sshTransfer(
-                                cleanRemote: true, 
-                                excludes: '', 
-                                execCommand: '', 
-                                execTimeout: 120000, 
-                                flatten: false, 
-                                makeEmptyDirs: false, 
-                                noDefaultExcludes: false, 
-                                patternSeparator: '[, ]+', 
-                                remoteDirectory: '/winning/winmid/nginx/html/material-demos', 
-                                remoteDirectorySDF: false, 
-                                // removePrefix: "${MATERIAL_BUILD_DIR}", 
-                                sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/**/*"
-                            )
-                        ], 
-                        usePromotionTimestamp: false, 
-                        useWorkspaceInPromotion: false, 
-                        verbose: false
-                    )
-            ]    
+            echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/"
+            mkdir -p "/winning/winmid/nginx/html/material-demos/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
+            cp  -a -f "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/*"  "/winning/winmid/nginx/html/material-demos/${MATERIAL_CATEGORY}/${MATERIAL_NAME}"
+            // sshPublisher failOnError: true,  publishers: [
+            //         sshPublisherDesc(
+            //             configName: 'demo-214', 
+            //             transfers: [
+            //                 sshTransfer(
+            //                     cleanRemote: true, 
+            //                     excludes: '', 
+            //                     execCommand: '', 
+            //                     execTimeout: 120000, 
+            //                     flatten: false, 
+            //                     makeEmptyDirs: false, 
+            //                     noDefaultExcludes: false, 
+            //                     patternSeparator: '[, ]+', 
+            //                     remoteDirectory: '/winning/winmid/nginx/html/material-demos', 
+            //                     remoteDirectorySDF: false, 
+            //                     // removePrefix: "${MATERIAL_BUILD_DIR}", 
+            //                     sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/**/*"
+            //                 )
+            //             ], 
+            //             usePromotionTimestamp: false, 
+            //             useWorkspaceInPromotion: false, 
+            //             verbose: false
+            //         )
+            // ]    
 
             withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                 sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
