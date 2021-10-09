@@ -7,7 +7,7 @@ pipeline {
     environment {
         CI = 'true'
         MATERIAL_BUILD_DIR = '/var/lib/jenkins/material-build'
-        COMMIT_ID = ''
+        COMMIT_ID = '666'
     }
      parameters {
         string(name:'CREDENTIALS_ID',defaultValue:'winning-tfs-gwj',description: 'GIT凭证ID')
@@ -144,18 +144,9 @@ pipeline {
         }
         success {
             // 如果构建状态为“成功”或尚未设置，则运行
-
-            // nexusArtifactUploader 
-            //     artifacts: [[artifactId: '$BRANCH_NAME', classifier: '', file: '$APP_NAME.zip', type: 'zip']], 
-            //     credentialsId: 'nexus_admin', 
-            //     groupId: '$APP_NAME', 
-            //     nexusUrl: '172.16.7.48:8081', 
-            //     nexusVersion: 'nexus3', 
-            //     protocol: 'http', 
-            //     repository: 'winex-snapshot/', 
-            //     version: "$J_BUILD_ID.$COMMIT_ID"
-
-            echo "Git commitID: ${env.COMMIT_ID}"
+            script {
+                echo "Git commitID: ${env.COMMIT_ID}"
+            }
 
             // 上传doc产物
             echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/"
