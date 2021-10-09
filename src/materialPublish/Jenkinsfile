@@ -7,6 +7,7 @@ pipeline {
     environment {
         CI = 'true'
         MATERIAL_BUILD_DIR = '/var/lib/jenkins/material-build'
+        COMMIT_ID = ''
     }
      parameters {
         string(name:'CREDENTIALS_ID',defaultValue:'winning-tfs-gwj',description: 'GIT凭证ID')
@@ -123,6 +124,7 @@ pipeline {
                             sh 'git status'
                             sh "git push origin HEAD:${PUBLISH_BRANCH_NAME}"
                         }
+                        COMMIT_ID = sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()
                     }
                 }
             }
@@ -150,7 +152,6 @@ pipeline {
             //     repository: 'winex-snapshot/', 
             //     version: "$J_BUILD_ID.$COMMIT_ID"
 
-            COMMIT_ID = sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()
             echo "Git commitID: ${COMMIT_ID}"
 
             // 上传doc产物
