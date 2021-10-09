@@ -142,10 +142,10 @@ pipeline {
         }
         success {
             // 如果构建状态为“成功”或尚未设置，则运行
-                echo "Git commitID: ${COMMIT_ID}"
-            steps {
-                echo "Git commitID2: ${COMMIT_ID}"
-            }
+            echo "Git commitID: ${COMMIT_ID}"
+            // steps {
+            //     echo "Git commitID2: ${COMMIT_ID}"
+            // }
 
             // 上传doc产物
             echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/"
