@@ -18,7 +18,7 @@ pipeline {
         string(name:'PUBLISH_PREID', defaultValue:'beta', description: '发布的版本标记：beta、release')
         string(name:'PUBLISH_BUMP', defaultValue:'patch', description: '发布版本标识：patch、minor、major')
         string(name:'MATERIAL_VERSION',  description: '自定义发布版本，如果传了此参数将会直接用这个版本发布，不再根据版本标记和版本标识计算版本号')
-        string(name:'PUBLISH_BRANCH_NAME',  defaultValue:'5510bd3480946738848590976073d1ee1ad5a5be', description: 'commitd')
+        string(name:'PUBLISH_BRANCH_NAME',  defaultValue:'master', description: '发布分支')
         string(name:'BUILD_PATH', defaultValue:"lib", description: '物料构建产物输出目录')
         string(name:'MATERIAL_DOC_DIR', defaultValue:"doc-dist", description: '物料文档构建产物输出目录')
         string(name:'MATERIAL_DEMO_DIR', defaultValue:"dist", description: '物料demo构建产物输出目录')
@@ -53,11 +53,9 @@ pipeline {
                         checkout(
                             [
                                 $class: 'GitSCM', 
-                                branches: [
-                                    [name: params.PUBLISH_BRANCH_NAME]], 
-                                    extensions: [[$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true]], 
-                                    userRemoteConfigs: [[credentialsId: 'winning-tfs-gwj', url: params.MATERIAL_REPOSITORY_GIT_PATH]
-                                ]
+                                branches: [[name: "${params.PUBLISH_BRANCH_NAME}"]], 
+                                extensions: [[$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true]], 
+                                userRemoteConfigs: [[credentialsId: 'winning-tfs-gwj', url: params.MATERIAL_REPOSITORY_GIT_PATH]]
                             ]
                         )
                     }
@@ -124,7 +122,7 @@ pipeline {
                             // sh 'git config --local user.email "g_wj@winning.com.cn"'
                             // sh 'git status'
                             // sh 'git push  origin master'
-                            sh "git push http://${GIT_USERNAME}:${GIT_PASSWORD}@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test HEAD:master" 
+                            sh "git push http://${GIT_USERNAME}:${GIT_PASSWORD}@tfs2018-web.winning.com.cn:8080/tfs/WINNING-6.0/W.in-MVP/_git/winning-webmaterials-test HEAD:${PUBLISH_BRANCH_NAME}" 
                         }
                     }
                 }
