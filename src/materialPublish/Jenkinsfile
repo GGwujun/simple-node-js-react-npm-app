@@ -122,7 +122,7 @@ pipeline {
                             sh "git config --local user.name $GIT_USERNAME"
                             sh 'git config --local user.email "g_wj@winning.com.cn"'
                             sh 'git status'
-                            sh "git push origin HEAD:${PUBLISH_BRANCH_NAME}"
+                            sh "git push --follow-tags origin  HEAD:${PUBLISH_BRANCH_NAME}"
                         }
                         COMMIT_ID = sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()
                         echo "COMMIT_ID = ${COMMIT_ID}" 
