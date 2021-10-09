@@ -117,11 +117,11 @@ pipeline {
                     echo 'push'
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
                         withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                            sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
+                            sh 'git config --local credential.helper "!p() { echo username=$GIT_USERNAME; echo password=$GIT_PASSWORD; }; p"'
                             sh "git config --local user.name $GIT_USERNAME"
                             sh 'git config --local user.email "g_wj@winning.com.cn"'
                             sh 'git status'
-                            sh "git push  HEAD:${PUBLISH_BRANCH_NAME}" 
+                            sh "git push origin HEAD:${PUBLISH_BRANCH_NAME}"
                         }
                     }
                 }
