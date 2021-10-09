@@ -124,7 +124,10 @@ pipeline {
                             sh 'git status'
                             sh "git push origin HEAD:${PUBLISH_BRANCH_NAME}"
                         }
-                        COMMIT_ID = sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()
+                        COMID = sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()
+                        withEnv(["COMMIT_ID=${COMID}"]) { 
+                            echo "COMMIT_ID = ${env.COMMIT_ID}" 
+                        }
                     }
                 }
             }
@@ -152,7 +155,7 @@ pipeline {
             //     repository: 'winex-snapshot/', 
             //     version: "$J_BUILD_ID.$COMMIT_ID"
 
-            echo "Git commitID: ${COMMIT_ID}"
+            echo "Git commitID: ${env.COMMIT_ID}"
 
             // 上传doc产物
             echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/"
