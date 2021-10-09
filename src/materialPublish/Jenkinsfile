@@ -124,10 +124,8 @@ pipeline {
                             sh 'git status'
                             sh "git push origin HEAD:${PUBLISH_BRANCH_NAME}"
                         }
-                        env.COMMIT_ID = ${sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()}
-                        // withEnv(["COMMIT_ID=${COMID}"]) { 
-                        //     echo "COMMIT_ID = ${env.COMMIT_ID}" 
-                        // }
+                        COMMIT_ID = ${sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()}
+                        echo "COMMIT_ID = ${COMMIT_ID}" 
                     }
                 }
             }
@@ -144,9 +142,8 @@ pipeline {
         }
         success {
             // 如果构建状态为“成功”或尚未设置，则运行
-            script {
-                echo "Git commitID: ${env.COMMIT_ID}"
-            }
+                echo "Git commitID: ${COMMIT_ID}"
+           
 
             // 上传doc产物
             echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/"
@@ -158,31 +155,6 @@ pipeline {
                 cp  -a -f ${DOC_FILE}  ${MATERIAL_DOC}
             '''
 
-            // sshPublisher failOnError: true,  publishers: [
-            //         sshPublisherDesc(
-            //             configName: 'demo-214', 
-            //             transfers: [
-            //                 sshTransfer(
-            //                     cleanRemote: true, 
-            //                     excludes: '', 
-            //                     execCommand: '', 
-            //                     execTimeout: 120000, 
-            //                     flatten: false, 
-            //                     makeEmptyDirs: false, 
-            //                     noDefaultExcludes: false, 
-            //                     patternSeparator: '[, ]+', 
-            //                     remoteDirectory: '/var/lib/jenkins/material-docs', 
-            //                     remoteDirectorySDF: false, 
-            //                     // removePrefix: "${MATERIAL_BUILD_DIR}", 
-            //                     sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DOC_DIR}/index.html"
-            //                 )
-            //             ], 
-            //             usePromotionTimestamp: false, 
-            //             useWorkspaceInPromotion: false, 
-            //             verbose: false
-            //         )
-            // ]
-
              // 上传demo产物
             echo  "upload ${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/"
             sh '''
@@ -192,31 +164,6 @@ pipeline {
                 mkdir -p ${MATERIAL_DEMO}
                 cp  -a -f ${DEMO_FILE}  ${MATERIAL_DEMO}
             '''
-
-            // sshPublisher failOnError: true,  publishers: [
-            //         sshPublisherDesc(
-            //             configName: 'demo-214', 
-            //             transfers: [
-            //                 sshTransfer(
-            //                     cleanRemote: true, 
-            //                     excludes: '', 
-            //                     execCommand: '', 
-            //                     execTimeout: 120000, 
-            //                     flatten: false, 
-            //                     makeEmptyDirs: false, 
-            //                     noDefaultExcludes: false, 
-            //                     patternSeparator: '[, ]+', 
-            //                     remoteDirectory: '/winning/winmid/nginx/html/material-demos', 
-            //                     remoteDirectorySDF: false, 
-            //                     // removePrefix: "${MATERIAL_BUILD_DIR}", 
-            //                     sourceFiles: "${MATERIAL_BUILD_DIR}/${MATERIAL_REPOSITORY_NAME}/${MATERIAL_PATH}/${MATERIAL_DEMO_DIR}/**/*"
-            //                 )
-            //             ], 
-            //             usePromotionTimestamp: false, 
-            //             useWorkspaceInPromotion: false, 
-            //             verbose: false
-            //         )
-            // ]
 
             cleanWs()
         }
