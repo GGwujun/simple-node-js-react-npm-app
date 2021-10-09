@@ -124,10 +124,10 @@ pipeline {
                             sh 'git status'
                             sh "git push origin HEAD:${PUBLISH_BRANCH_NAME}"
                         }
-                        COMID = sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()
-                        withEnv(["COMMIT_ID=${COMID}"]) { 
-                            echo "COMMIT_ID = ${env.COMMIT_ID}" 
-                        }
+                        env.COMMIT_ID = ${sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()}
+                        // withEnv(["COMMIT_ID=${COMID}"]) { 
+                        //     echo "COMMIT_ID = ${env.COMMIT_ID}" 
+                        // }
                     }
                 }
             }
