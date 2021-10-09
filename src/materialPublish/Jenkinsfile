@@ -6,7 +6,7 @@ pipeline {
     agent any
     environment {
         CI = 'true'
-        MATERIAL_BUILD_DIR = '/var/lib/jenkins/material-build'
+        MATERIAL_BUILD_DIR = './material-build'
         COMMIT_ID = '666'
     }
      parameters {
