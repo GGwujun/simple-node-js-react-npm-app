@@ -6,8 +6,8 @@ pipeline {
     agent any
     environment {
         CI = 'true'
-        MATERIAL_BUILD_DIR = './material-build'
-        COMMIT_ID = '666'
+        MATERIAL_BUILD_DIR = './material-create'
+        COMMIT_ID = ''
     }
      parameters {
         string(name:'CREDENTIALS_ID',defaultValue:'winning-tfs-gwj',description: 'GIT凭证ID')
@@ -16,13 +16,8 @@ pipeline {
         string(name:'MATERIAL_NAME',defaultValue:'person-input',description: '物料名称')
         string(name:'MATERIAL_PATH', defaultValue:'components/person-input',description: '物料目录相对于物料仓库的路径，比如component/winning-materials-test')
         string(name:'MATERIAL_CATEGORY', defaultValue:'component',description: '物料分类：component、block、plugin、scaffold')
-        string(name:'PUBLISH_PREID', defaultValue:'beta', description: '发布的版本标记：beta、release')
-        string(name:'PUBLISH_BUMP', defaultValue:'patch', description: '发布版本标识：patch、minor、major')
         string(name:'MATERIAL_VERSION',  description: '自定义发布版本，如果传了此参数将会直接用这个版本发布，不再根据版本标记和版本标识计算版本号')
-        string(name:'PUBLISH_BRANCH_NAME',  defaultValue:'master', description: '发布分支')
-        string(name:'BUILD_PATH', defaultValue:"lib", description: '物料构建产物输出目录')
-        string(name:'MATERIAL_DOC_DIR', defaultValue:"doc-dist", description: '物料文档构建产物输出目录')
-        string(name:'MATERIAL_DEMO_DIR', defaultValue:"dist", description: '物料demo构建产物输出目录')
+        string(name:'PUBLISH_BRANCH_NAME',  defaultValue:'develop', description: '推送分支')
         string(name:'PUBLISH_PARAMS',  description: '自定义传给winex publish的参数')
         string(name:'CACHE', defaultValue:"true", description: '是否缓存node_modules')
         string(name:'FEEDBACK_URL', description: 'JOB反馈地址，一般为pre_post和post时触发')
@@ -35,6 +30,11 @@ pipeline {
         //         '''
         //     }
         // }
+        stage('Init Env') {
+            steps {
+                sh 'yarn config set registry http://172.16.9.242:8081/repository/npm-group/'
+            }
+        }
         stage('Pre Git') {
             steps{
                 sh "./src/materialPublish/scripts/test.sh"
@@ -61,9 +61,31 @@ pipeline {
                 }
             }
         }
-        stage('Pre Env') {
+        stage('Create Material') {
             steps {
-                sh 'yarn config set registry http://172.16.9.242:8081/repository/npm-group/'
+                script {
+                    echo "init material repository env"
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
+                        if (!fileExists('node_modules')) {
+                            sh 'yarn --force  --pure-lockfile'
+                        } else {
+                            if (!params.CACHE) {
+                                echo "CACHE --- ${params.CACHE}"
+                                deleteDir('node_modules')
+                                sh 'yarn --force  --pure-lockfile'
+                            }
+                        }
+                    }
+                    echo 'start init material by winex cli'
+                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}/${params.MATERIAL_PATH}") {
+                        // TODO 需要修改wienx init的功能
+                        sh 'winex init'
+                    }
+                }
+            }
+        }
+        stage('Material Env Test') {
+            steps {
                 script {
                     dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}") {
                         if (!fileExists('node_modules')) {
@@ -88,29 +110,17 @@ pipeline {
                                 sh 'yarn --force  --pure-lockfile'
                             }
                         }
-                    }
-                }
-            }
-        }
-        stage('publish') {
-            steps {
-                script {
-                    dir("${MATERIAL_BUILD_DIR}/${params.MATERIAL_REPOSITORY_NAME}/${params.MATERIAL_PATH}") {
-                        if(params.PUBLISH_PREID == 'beta'){
-                            echo "winex publish --beta  ${params.PUBLISH_BUMP} --skipGitStatusCheck ${params.PUBLISH_PARAMS}"
-                            sh "winex publish --beta  ${params.PUBLISH_BUMP} --skipGitStatusCheck ${params.PUBLISH_PARAMS}"
-                        }
-                        if(params.PUBLISH_ISRELEASE == 'release'){
-                            echo 'winex publish --release ${params.PUBLISH_BUMP} --skipGitStatusCheck'
-                            sh 'winex publish --release ${params.PUBLISH_BUMP} --skipGitStatusCheck'
-                        }
+                        echo "test lib build"
+                        sh 'winex  build'
+                        echo "test doc build"
                         sh 'winex doc build'
+                        echo "test demo build"
                         sh 'winex build --app-type materialDemo'
                     }
                 }
             }
         }
-        stage('push') {
+        stage('Material Push') {
             steps {
                 script {
                     echo 'push'
@@ -118,12 +128,14 @@ pipeline {
                         withCredentials([usernamePassword(credentialsId: 'winning-tfs-gwj', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                             sh 'git config --local credential.helper "!p() { echo username=$GIT_USERNAME; echo password=$GIT_PASSWORD; }; p"'
                             sh "git config --local user.name $GIT_USERNAME"
-                            sh 'git config --local user.email "g_wj@winning.com.cn"'
-                            sh 'git status'
+                            sh "git config --local user.email 'g_wj@winning.com.cn'"
+                            sh "git status"
+                            sh "git add ."
+                            sh "git commit -m 'feat(ci): winex init material ${MATERIAL_NAME}'"
                             sh "git push --follow-tags origin  HEAD:${PUBLISH_BRANCH_NAME}"
                         }
                         COMMIT_ID = sh(returnStdout: true,encoding: 'UTF-8',script: 'git rev-parse HEAD').trim()
-                        echo "COMMIT_ID = ${COMMIT_ID}" 
+                        echo "COMMIT_ID = ${COMMIT_ID}"
                     }
                 }
             }
